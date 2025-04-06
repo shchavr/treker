@@ -14,7 +14,7 @@
 
 - [Ссылка на доску](https://github.com/users/shchavr/projects/8/views/1)
 
-**Frontend-разработки:**
+**Артефакты Frontend-разработки:**
 
 - [Ссылка на гугл док со сценарием](https://drive.google.com/drive/u/0/folders/1gSOHr5qT3ABqQyyY4hjhOg2K52uV-NxF)
 
