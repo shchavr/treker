@@ -1,4 +1,5 @@
 from datetime import timedelta
+
 """
 Django settings for backend project.
 
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'djoser',
     'accounts',
     'cards',
+    'projects',
 ]
 
 MIDDLEWARE = [
@@ -79,7 +81,7 @@ SIMPLE_JWT = {
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'USER_CREATE_PASSWORD_RETYPE': True,
-    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_ACTIVATION_EMAIL': False,
     'ACTIVATION_URL': 'activate/{uid}/{token}/',
     'SERIALIZERS': {
         'user_create': 'accounts.serializers.CustomUserCreateSerializer',
