@@ -4,7 +4,7 @@ __pycache__/
 *.egg-info/
 *.log
 
-# Virtual env
+# Virtual .venv
 venv/
 .env/
 
