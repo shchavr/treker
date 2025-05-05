@@ -11,12 +11,13 @@ class SwaggerUIView(SpectacularSwaggerView):
 class RedocUIView(SpectacularRedocView):
     serve_static = True
 
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/accounts/', include('accounts.urls')),
     path('api/cards/', include('cards.urls')),
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
+    path('api/auth/', include('djoser.urls')),
+    path('api/auth/', include('djoser.urls.jwt')),
 
     # drf-spectacular schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
