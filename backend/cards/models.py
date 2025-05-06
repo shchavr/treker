@@ -13,3 +13,15 @@ class Note(models.Model):
 
     def __str__(self):
         return self.content[:30]
+
+class Column(models.Model):
+    card = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='columns')  # если Note = Card
+    name = models.CharField(max_length=100)
+    position = models.PositiveIntegerField()
+    limit_work_item = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['position']
+
+    def __str__(self):
+        return self.name
