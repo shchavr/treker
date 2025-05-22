@@ -3,14 +3,8 @@ from django.conf import settings
 
 User = settings.AUTH_USER_MODEL
 
-class RoleUser(models.Model):
-    name = models.CharField(max_length=50)  # admin, manager, developer, user
-
-    def __str__(self):
-        return self.name
-
 class RoleProjectMember(models.Model):
-    name = models.CharField(max_length=50)  # admin, participant, observer
+    name = models.CharField(max_length=50)  # Например: "owner", "editor", "viewer"
 
     def __str__(self):
         return self.name
