@@ -1,11 +1,28 @@
 from django.urls import path
-from .views import NoteListCreateView
-from .views import ColumnCreateListView, ColumnUpdateDeleteView
-from .views import CardListByProjectView
+from .views import CardViewSet, ColumnViewSet, reorder_columns
+
+card_list_create = CardViewSet.as_view({
+    'get': 'list',
+    'post': 'create',
+})
+
+card_detail = CardViewSet.as_view({
+    'get': 'retrieve',
+})
+
+column_create = ColumnViewSet.as_view({
+    'post': 'create',
+})
+
+column_update = ColumnViewSet.as_view({
+    'put': 'update',
+    'delete': 'destroy',
+})
 
 urlpatterns = [
-    path('project/<int:project_id>/notes/', NoteListCreateView.as_view(), name='project-notes'),
-    path('project/<int:project_id>/cards/', CardListByProjectView.as_view(), name='project-cards'),
-    path('cards/<int:card_id>/columns/', ColumnCreateListView.as_view(), name='column-list-create'),
-    path('columns/<int:pk>/', ColumnUpdateDeleteView.as_view(), name='column-detail'),
+    path('projects/<int:project_id>/cards/', card_list_create),
+    path('<int:pk>/', card_detail),
+    path('<int:card_id>/columns/', column_create),
+    path('columns/<int:pk>/', column_update),
+    path('columns/reorder/', reorder_columns),
 ]

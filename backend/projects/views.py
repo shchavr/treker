@@ -1,78 +1,59 @@
-from rest_framework import generics, permissions
-from .models import Project
-from .serializers import ProjectSerializer
-from rest_framework import generics, permissions, status
+# views.py
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
 from .models import Project, ProjectMember, RoleProjectMember
-from accounts.models import User
-from .serializers import ProjectMemberSerializer
+from .serializers import ProjectSerializer, ProjectMemberSerializer, UserSerializer
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
-class ProjectListCreateView(generics.ListCreateAPIView):
+class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Project.objects.filter(members__user=self.request.user)
-    
 
-def is_project_admin(project, user):
-    return ProjectMember.objects.filter(
-        project=project, user=user, role__name='admin'
-    ).exists()
+    def perform_destroy(self, instance):
+        # Возможно, только owner может удалять?
+        instance.delete()
 
-class ProjectMembersListView(generics.ListAPIView):
-    serializer_class = ProjectMemberSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        project = self.get_object()
+        members = ProjectMember.objects.filter(project=project)
+        data = [
+            {
+                "user": UserSerializer(m.user).data,
+                "role": m.role.name
+            }
+            for m in members
+        ]
+        return Response(data)
 
-    def get_queryset(self):
-        project = Project.objects.get(id=self.kwargs['project_id'])
-        if not project.members.filter(user=self.request.user).exists():
-            raise PermissionDenied("Вы не участник проекта.")
-        return ProjectMember.objects.filter(project=project)
+    @action(detail=True, methods=['post'])
+    def add_member(self, request, pk=None):
+        project = self.get_object()
+        user_id = request.data.get('user_id')
+        role_id = request.data.get('role_id')
+        user = get_object_or_404(User, id=user_id)
+        role = get_object_or_404(RoleProjectMember, id=role_id)
+        ProjectMember.objects.create(user=user, project=project, role=role)
+        return Response({'status': 'member added'})
 
-class AddProjectMemberView(generics.CreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, project_id):
-        project = Project.objects.get(id=project_id)
-        if not is_project_admin(project, request.user):
-            raise PermissionDenied("Только админ может добавлять участников.")
-
-        email = request.data.get('email')
-        role_name = request.data.get('role')
-
-        user = User.objects.get(email=email)
-        role = RoleProjectMember.objects.get(name=role_name)
-
-        ProjectMember.objects.create(project=project, user=user, role=role)
-        return Response({"detail": "Участник добавлен"}, status=status.HTTP_201_CREATED)
-
-class ChangeMemberRoleView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def put(self, request, project_id, user_id):
-        project = Project.objects.get(id=project_id)
-        if not is_project_admin(project, request.user):
-            raise PermissionDenied("Только админ может менять роли.")
-
-        role_name = request.data.get('role')
-        role = RoleProjectMember.objects.get(name=role_name)
-
-        member = ProjectMember.objects.get(project=project, user__id=user_id)
+    @action(detail=True, methods=['put'], url_path='members/(?P<user_id>[^/.]+)/role')
+    def change_role(self, request, pk=None, user_id=None):
+        project = self.get_object()
+        member = get_object_or_404(ProjectMember, project=project, user_id=user_id)
+        role_id = request.data.get('role_id')
+        role = get_object_or_404(RoleProjectMember, id=role_id)
         member.role = role
         member.save()
+        return Response({'status': 'role updated'})
 
-        return Response({"detail": "Роль изменена"}, status=status.HTTP_200_OK)
-
-class RemoveProjectMemberView(generics.DestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def delete(self, request, project_id, user_id):
-        project = Project.objects.get(id=project_id)
-        if not is_project_admin(project, request.user):
-            raise PermissionDenied("Только админ может удалять участников.")
-
-        ProjectMember.objects.get(project=project, user__id=user_id).delete()
-        return Response({"detail": "Участник удалён"}, status=status.HTTP_204_NO_CONTENT)
+    @action(detail=True, methods=['delete'], url_path='members/(?P<user_id>[^/.]+)')
+    def remove_member(self, request, pk=None, user_id=None):
+        project = self.get_object()
+        ProjectMember.objects.filter(project=project, user_id=user_id).delete()
+        return Response({'status': 'member removed'}, status=status.HTTP_204_NO_CONTENT)

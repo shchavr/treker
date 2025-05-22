@@ -1,18 +1,24 @@
 from rest_framework import serializers
-from .models import Note
-from .models import Column
-
-class NoteSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.email')  
-    project = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    class Meta:
-        model = Note
-        fields = ['id', 'author', 'project', 'content', 'created_at']
-        read_only_fields = ['id', 'author', 'project', 'created_at']
+from .models import Card, Column
 
 class ColumnSerializer(serializers.ModelSerializer):
     class Meta:
         model = Column
-        fields = ['id', 'card', 'name', 'position', 'limit_work_item']
-        read_only_fields = ['id', 'card'] 
+        fields = ['id', 'title', 'order', 'card']
+        read_only_fields = ['card']
+        extra_kwargs = {
+            'order': {'required': False}
+        }
+
+
+class CardSerializer(serializers.ModelSerializer):
+    columns = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Card
+        fields = ['id', 'title', 'created_at', 'columns']
+        read_only_fields = ['created_at']
+
+    def get_columns(self, obj):
+        columns = obj.columns.order_by('order')
+        return ColumnSerializer(columns, many=True).data
