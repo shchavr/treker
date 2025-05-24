@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.serializers import CustomUserSerializer
-from .models import WorkItem, Comment, Tag, WorkItemType
+from .models import WorkItem, Comment, Tag, WorkItemType, WorkItemHistory
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,3 +31,11 @@ class WorkItemSerializer(serializers.ModelSerializer):
         validated_data['creator'] = self.context['request'].user
         validated_data['type'] = WorkItemType.objects.get(id=1)
         return super().create(validated_data)
+
+
+# work_item/serializers.py
+
+class WorkItemHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkItemHistory
+        fields = ['id', 'from_column', 'to_column', 'changed_at']

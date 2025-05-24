@@ -19,4 +19,4 @@ def create_card_and_columns_for_project(sender, instance, created, **kwargs):
         # Создаём три стандартные колонки
         Column.objects.create(card=card, title='Выполняется', order=1)
         Column.objects.create(card=card, title='В проверке', order=2)
-        Column.objects.create(card=card, title='Готово', order=3)
+        Column.objects.create(card=card, title='Готово', order=3, is_system=True)
