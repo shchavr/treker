@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 from .models import WorkItem, Tag, Comment, WorkItemType
 from cards.models import Card, Column
 from .serializers import WorkItemSerializer, CommentSerializer, TagSerializer, WorkItemTypeSerializer
+from .serializers import WorkItemSerializer, WorkItemHistorySerializer  # если используешь history endpoint
+from .models import Column, WorkItemHistory
 
 class WorkItemViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
@@ -113,6 +115,38 @@ class WorkItemViewSet(viewsets.ViewSet):
         comments = task.comments.all()
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
+    
+
+    # work_item/views.py
+
+    def update(self, request, pk=None):
+        instance = get_object_or_404(WorkItem, id=pk)
+        old_column = instance.column
+
+        serializer = WorkItemSerializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_instance = serializer.save()
+            if 'column' in request.data and updated_instance.column != old_column:
+                WorkItemHistory.objects.create(
+                    work_item=updated_instance,
+                    from_column=old_column,
+                    to_column=updated_instance.column
+                )
+            return Response(WorkItemSerializer(updated_instance).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # work_item/views.py
+
+    @action(detail=True, methods=['get'])
+    def history(self, request, pk=None):
+        item = self.get_object()
+        history = item.history.all().order_by('-changed_at')
+        serializer = WorkItemHistorySerializer(history, many=True)
+        return Response(serializer.data)
+
+    
+
+
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
@@ -123,3 +157,5 @@ class WorkItemTypeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = WorkItemType.objects.all()
     serializer_class = WorkItemTypeSerializer
     permission_classes = [IsAuthenticated]
+
+

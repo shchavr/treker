@@ -18,6 +18,7 @@ urlpatterns = [
     path('cards/', include('cards.urls')),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
+    path('api/reports/', include('reports.urls')),
 
     # drf-spectacular schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

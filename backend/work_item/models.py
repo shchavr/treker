@@ -41,3 +41,14 @@ class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class WorkItemHistory(models.Model):
+    work_item = models.ForeignKey('WorkItem', on_delete=models.CASCADE, related_name='history')
+    from_column = models.ForeignKey('cards.Column', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    to_column = models.ForeignKey('cards.Column', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    moved_at = models.DateTimeField(auto_now_add=True)
+    moved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.work_item.title}: {self.from_column} → {self.to_column} @ {self.moved_at}'

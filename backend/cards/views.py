@@ -58,6 +58,12 @@ class ColumnViewSet(viewsets.ViewSet):
         column = get_object_or_404(Column, id=pk)
         if not ProjectMember.objects.filter(user=request.user, project=column.card.project).exists():
             return Response({'detail': 'Access denied'}, status=403)
+
+        # 🔒 Защита от переименования системной колонки
+        new_title = request.data.get('title')
+        if column.is_system and new_title and new_title != column.title:
+            return Response({'detail': 'Нельзя переименовать системную колонку "Готово"'}, status=400)
+
         serializer = ColumnSerializer(column, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -68,6 +74,11 @@ class ColumnViewSet(viewsets.ViewSet):
         column = get_object_or_404(Column, id=pk)
         if not ProjectMember.objects.filter(user=request.user, project=column.card.project).exists():
             return Response({'detail': 'Access denied'}, status=403)
+
+        # 🔒 Защита от удаления системной колонки
+        if column.is_system:
+            return Response({'detail': 'Нельзя удалить системную колонку "Готово"'}, status=400)
+
         column.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

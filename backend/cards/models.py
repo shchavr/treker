@@ -9,7 +9,9 @@ class Card(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+
 class Column(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='columns')
     title = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
+    is_system = models.BooleanField(default=False)  # ← добавляем
