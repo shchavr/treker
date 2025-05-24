@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from accounts.serializers import CustomUserSerializer
 from .models import WorkItem, Comment, Tag, WorkItemType
 
 class TagSerializer(serializers.ModelSerializer):
@@ -19,10 +21,11 @@ class WorkItemTypeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class WorkItemSerializer(serializers.ModelSerializer):
+    creator = CustomUserSerializer(read_only=True)
     class Meta:
         model = WorkItem
         fields = '__all__'
-        read_only_fields = ['id', 'creator', 'created_at', 'type']
+        read_only_fields = ['id', 'creator', 'created_at']
 
     def create(self, validated_data):
         validated_data['creator'] = self.context['request'].user
