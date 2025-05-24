@@ -16,13 +16,13 @@
 
 **Артефакты Frontend-разработки:**
 
-- [Ссылка на гугл док со сценарием](https://drive.google.com/drive/u/0/folders/1gSOHr5qT3ABqQyyY4hjhOg2K52uV-NxF)
+- [Ссылка на гугл док Frontend-разработчика](https://drive.google.com/drive/u/0/folders/1gSOHr5qT3ABqQyyY4hjhOg2K52uV-NxF)
 
 - [Ссылка на репозиторий Frontend-разработчика](https://github.com/Larmy5502/treker-frontend)
 
 **Артефакты Backend-разработки:**
 
-- [Ссылка на гугл док со сценарием](https://drive.google.com/drive/u/0/folders/11vJFRMxo-55x2Tb-wQbcpSMz8-w8-gXG)
+- [Ссылка на гугл док Backend-разработчика](https://drive.google.com/drive/u/0/folders/11vJFRMxo-55x2Tb-wQbcpSMz8-w8-gXG)
 
 **Артефакты Дизайнера:**
 
