@@ -29,3 +29,20 @@ class ProjectMember(models.Model):
 
     def __str__(self):
         return f"{self.user.email} in {self.project.title}"
+
+import uuid
+from django.utils import timezone
+from datetime import timedelta
+
+class ProjectInvite(models.Model):
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    project = models.ForeignKey('Project', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def is_expired(self):
+        return self.created_at < timezone.now() - timedelta(days=3)  # ← ссылка активна 3 дня
+
+    def __str__(self):
+        return f"Invite to {self.project.title} by {self.created_by}"

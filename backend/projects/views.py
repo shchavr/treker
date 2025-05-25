@@ -1,8 +1,8 @@
-# views.py
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from .models import Project, ProjectMember, RoleProjectMember
+from rest_framework.permissions import IsAuthenticated
+from .models import Project, ProjectMember, RoleProjectMember, ProjectInvite
 from .serializers import ProjectSerializer, ProjectMemberSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -11,12 +11,12 @@ User = get_user_model()
 
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Project.objects.filter(members__user=self.request.user)
 
     def perform_destroy(self, instance):
-        # Возможно, только owner может удалять?
         instance.delete()
 
     @action(detail=True, methods=['get'])
@@ -57,3 +57,32 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project = self.get_object()
         ProjectMember.objects.filter(project=project, user_id=user_id).delete()
         return Response({'status': 'member removed'}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'])
+    def generate_invite(self, request, pk=None):
+        project = self.get_object()
+        invite = ProjectInvite.objects.create(project=project, created_by=request.user)
+        return Response({'token': str(invite.token)})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_invite(request):
+    token = request.data.get('token')
+
+    try:
+        invite = ProjectInvite.objects.get(token=token)
+    except ProjectInvite.DoesNotExist:
+        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if invite.is_expired:
+        return Response({'error': 'Invite link expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+    already_joined = ProjectMember.objects.filter(project=invite.project, user=request.user).exists()
+    if already_joined:
+        return Response({'status': 'already_member', 'project_id': invite.project.id})
+
+    default_role = RoleProjectMember.objects.get(name='editor')
+    ProjectMember.objects.create(project=invite.project, user=request.user, role=default_role)
+
+    return Response({'status': 'joined', 'project_id': invite.project.id})
