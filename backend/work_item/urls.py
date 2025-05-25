@@ -12,6 +12,10 @@ workitem_detail = WorkItemViewSet.as_view({
     'delete': 'destroy'
 })
 
+history_view = WorkItemViewSet.as_view({
+    'get': 'history'
+})
+
 urlpatterns = [
     path('boards/<int:board_id>/tasks/', workitem_list),
     path('tasks/<int:pk>/', workitem_detail),
@@ -21,5 +25,7 @@ urlpatterns = [
     path('tasks/<int:pk>/comments/', WorkItemViewSet.as_view({'post': 'comments', 'get': 'get_comments'})),
     path('tags/', TagViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('tags/<int:pk>/', TagViewSet.as_view({'put': 'update', 'delete': 'destroy'})),
-    path('task-types/', WorkItemTypeViewSet.as_view({'get': 'list'}))
+    path('task-types/', WorkItemTypeViewSet.as_view({'get': 'list'})),
+
+    path('tasks/<int:pk>/history/', history_view),
 ]

@@ -19,7 +19,7 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
     path('api/reports/', include('reports.urls')),
-
+    path('api/cfd/', include('cfd.urls')),
     # drf-spectacular schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SwaggerUIView.as_view(url_name='schema'), name='swagger-ui'),

@@ -65,15 +65,33 @@ class WorkItemViewSet(viewsets.ViewSet):
     @extend_schema(
         request={'type': 'object', 'properties': {'column_id': {'type': 'integer'}}}
     )
+
     @action(detail=True, methods=['patch'])
     def move(self, request, pk=None):
         task = get_object_or_404(WorkItem, pk=pk)
         column_id = request.data.get('column_id')
         if not column_id:
             return Response({'error': 'column_id is required'}, status=400)
-        task.column_id = column_id
+
+        from_column = task.column
+        to_column = get_object_or_404(Column, pk=column_id)
+
+        if from_column == to_column:
+            return Response({'status': 'already in this column'})
+
+        task.column = to_column
         task.save()
+
+        # Создание записи в истории
+        WorkItemHistory.objects.create(
+            work_item=task,
+            from_column=from_column,
+            to_column=to_column,
+            moved_by=request.user
+        )
+
         return Response({'status': 'moved', 'new_column': column_id})
+
 
     @extend_schema(
         request={'type': 'object', 'properties': {'user_id': {'type': 'integer'}}}
@@ -135,12 +153,10 @@ class WorkItemViewSet(viewsets.ViewSet):
             return Response(WorkItemSerializer(updated_instance).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    # work_item/views.py
-
     @action(detail=True, methods=['get'])
     def history(self, request, pk=None):
-        item = self.get_object()
-        history = item.history.all().order_by('-changed_at')
+        item = get_object_or_404(WorkItem, pk=pk)
+        history = item.history.all().order_by('-moved_at')
         serializer = WorkItemHistorySerializer(history, many=True)
         return Response(serializer.data)
 

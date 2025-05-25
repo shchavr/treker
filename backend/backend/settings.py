@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'work_item',
     'reports',
+    'cfd',
 ]
 
 MIDDLEWARE = [
