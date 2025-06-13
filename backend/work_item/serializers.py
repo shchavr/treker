@@ -38,4 +38,4 @@ class WorkItemSerializer(serializers.ModelSerializer):
 class WorkItemHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkItemHistory
-        fields = ['id', 'from_column', 'to_column', 'changed_at']
+        fields = ['id', 'work_item', 'from_column', 'to_column', 'moved_at', 'moved_by']

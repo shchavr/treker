@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import WorkItemViewSet, TagViewSet, WorkItemTypeViewSet
+from .views import WorkItemViewSet, TagViewSet, WorkItemTypeViewSet, search_tasks, filter_tasks
 
 workitem_list = WorkItemViewSet.as_view({
     'get': 'list',
@@ -26,6 +26,7 @@ urlpatterns = [
     path('tags/', TagViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('tags/<int:pk>/', TagViewSet.as_view({'put': 'update', 'delete': 'destroy'})),
     path('task-types/', WorkItemTypeViewSet.as_view({'get': 'list'})),
-
     path('tasks/<int:pk>/history/', history_view),
+    path('tasks/search/', search_tasks, name='search-tasks'),
+    path('boards/<int:board_id>/tasks/filter/', filter_tasks, name='filtered-tasks'),
 ]

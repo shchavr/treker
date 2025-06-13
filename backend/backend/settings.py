@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'work_item',
     'reports',
     'cfd',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

@@ -14,7 +14,6 @@ from django.db.models.functions import TruncDate
 from work_item.models import WorkItem, WorkItemHistory
 from cards.models import Column
 
-
 class CreatedResolvedGraphView(APIView):
     def get(self, request):
         # Количество дней назад
@@ -29,10 +28,18 @@ class CreatedResolvedGraphView(APIView):
         if not project_id:
             return JsonResponse({'error': 'project_id обязателен'}, status=400)
 
-        # Получаем колонку "Готово"
-        done_column = Column.objects.filter(title__icontains='готово').first()
-        if not done_column:
-            return JsonResponse({'error': 'Колонка "Готово" не найдена'}, status=400)
+        # Получаем done_column_id из параметров или ищем по названию
+        done_column_id = request.query_params.get('done_column_id')
+        if done_column_id:
+            try:
+                done_column_id = int(done_column_id)
+            except ValueError:
+                return JsonResponse({'error': 'done_column_id должен быть числом'}, status=400)
+        else:
+            done_column = Column.objects.filter(title__icontains='готово').first()
+            if not done_column:
+                return JsonResponse({'error': 'Колонка "Готово" не найдена'}, status=400)
+            done_column_id = done_column.id
 
         # Подсчёт созданных задач по дням
         created_data = (
@@ -46,10 +53,10 @@ class CreatedResolvedGraphView(APIView):
         )
         created_map = {str(row['day']): row['count'] for row in created_data}
 
-        # Подсчёт решённых задач (перемещённых в "Готово")
+        # Подсчёт решённых задач по дням (по to_column_id)
         resolved_data = (
             WorkItemHistory.objects.filter(
-                to_column=done_column,
+                to_column_id=done_column_id,
                 moved_at__date__gte=start_date,
                 work_item__project_id=project_id
             )
@@ -90,6 +97,7 @@ class CreatedResolvedGraphView(APIView):
         ax.set_xticklabels(date_labels[::3], rotation=45)
         ax.set_title(f'Накопление задач (проект ID: {project_id})')
         ax.set_ylabel('Количество задач')
+        ax.set_yticks(range(0, max(created_total, resolved_total) + 2))
         ax.legend()
         plt.tight_layout()
 
