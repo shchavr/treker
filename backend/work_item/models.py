@@ -28,6 +28,8 @@ class WorkItem(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
     board = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='tasks')
     tags = models.ManyToManyField(Tag, through='WorkItemTag', related_name='work_items')
+    due_date = models.DateField(null=True, blank=True)
+    attachments = models.ManyToManyField('Attachment', blank=True, related_name='work_items')
 
 class WorkItemTag(models.Model):
     work_item = models.ForeignKey(WorkItem, on_delete=models.CASCADE)
@@ -35,6 +37,16 @@ class WorkItemTag(models.Model):
 
     class Meta:
         unique_together = ('work_item', 'tag')
+
+class Attachment(models.Model):
+    file = models.FileField(upload_to='attachments/')
+    name = models.CharField(max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name or self.file.name
+
 
 class Comment(models.Model):
     work_item = models.ForeignKey(WorkItem, on_delete=models.CASCADE, related_name='comments')

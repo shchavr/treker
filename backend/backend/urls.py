@@ -26,7 +26,9 @@ urlpatterns = [
     path('api/redoc/', RedocUIView.as_view(url_name='schema'), name='redoc'),
     path('projects/', include('projects.urls')),
     path('tasks/', include('work_item.urls')),
-
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

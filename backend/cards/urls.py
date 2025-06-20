@@ -8,6 +8,7 @@ card_list_create = CardViewSet.as_view({
 
 card_detail = CardViewSet.as_view({
     'get': 'retrieve',
+    'patch': 'partial_update',  # 👈 Добавили PATCH
 })
 
 column_create = ColumnViewSet.as_view({

@@ -1,5 +1,16 @@
 from django.urls import path
-from .views import WorkItemViewSet, TagViewSet, WorkItemTypeViewSet, search_tasks, filter_tasks
+from .views import WorkItemViewSet, TagViewSet, WorkItemTypeViewSet, search_tasks, filter_tasks, AttachmentViewSet
+
+attachment_list = AttachmentViewSet.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+
+attachment_detail = AttachmentViewSet.as_view({
+    'get': 'retrieve',
+    'delete': 'destroy'
+})
+
 
 workitem_list = WorkItemViewSet.as_view({
     'get': 'list',
@@ -17,6 +28,8 @@ history_view = WorkItemViewSet.as_view({
 })
 
 urlpatterns = [
+    path('attachments/', attachment_list),
+    path('attachments/<int:pk>/', attachment_detail),
     path('boards/<int:board_id>/tasks/', workitem_list),
     path('tasks/<int:pk>/', workitem_detail),
     path('tasks/<int:pk>/move/', WorkItemViewSet.as_view({'patch': 'move'})),

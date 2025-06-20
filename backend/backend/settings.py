@@ -1,4 +1,5 @@
 from datetime import timedelta
+import os
 
 """
 Django settings for backend project.
@@ -87,7 +88,11 @@ SIMPLE_JWT = {
     # Устанавливаем срок жизни токена
    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
    'AUTH_HEADER_TYPES': ('Bearer',),
-} 
+}
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DJOSER = {
     'LOGIN_FIELD': 'email',

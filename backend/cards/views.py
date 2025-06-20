@@ -36,6 +36,17 @@ class CardViewSet(viewsets.ViewSet):
         serializer = CardSerializer(card)
         return Response(serializer.data)
 
+    def partial_update(self, request, pk=None):
+        card = get_object_or_404(Card, pk=pk)
+        if not ProjectMember.objects.filter(user=request.user, project=card.project).exists():
+            return Response({'detail': 'Access denied'}, status=403)
+
+        serializer = CardSerializer(card, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
 
 class ColumnViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsProjectMember]
